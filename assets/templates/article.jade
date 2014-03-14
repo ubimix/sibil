@@ -1,0 +1,14 @@
+
+extends layout
+include mixins
+
+block append vars
+  - bodyclass = 'article-detail'
+
+block content
+  article.article
+    section.content(style="margin-top:1em;")
+        !=content
+
+
+

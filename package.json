@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "js-yaml":"latest",
+    "fileset":"latest",
+    "underscore":"latest",
+    "jade":"latest",
+    "typogr": "latest",
+    "fs-extra": "latest",
+    "q": "latest"
+  },
+  "repository": "none"
+}

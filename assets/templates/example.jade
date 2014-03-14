@@ -1,0 +1,11 @@
+
+h2= title
+
+each image in gallery
+  img(src=image.src)
+  span=image.label
+  a(href=image.href) 
+    span=image.label
+
+div(style="background-color:red;")
+    !=content

@@ -1,0 +1,12 @@
+include mixins
+
+h1= title
+ | Tags:  
+ mixin problems(problems)
+ mixin tags(tags)
+    
+block content
+  article.article
+    section.content(style="margin-top:1em;")
+        div.well
+            !=content
