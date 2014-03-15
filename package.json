@@ -6,7 +6,8 @@
     "jade":"latest",
     "typogr": "latest",
     "fs-extra": "latest",
-    "q": "latest"
+    "q": "latest",
+    "marked": "latest"
   },
   "repository": "none"
 }

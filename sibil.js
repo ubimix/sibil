@@ -5,7 +5,8 @@ var Jade = require('jade');
 var fileset = require('fileset');
 var typogr = require('typogr');
 var path = require('path');
-var Q = require("q");
+var Q = require('q');
+var Marked = require('marked');
 
 var patternsDir = '/home/arkub/git/ux-patterns/';
 
@@ -14,6 +15,12 @@ fs.mkdirSync('./build');
 
 fs.copySync('./assets/css', 'build/css');
 fs.copySync('./assets/js', 'build/js');
+
+var locals = {
+        'title':'UX Patterns for Maps',
+        'url': '../',
+        'description': 'Ramblings of an immor(t)al demigod'
+      }
 
 Q.nfcall(fileset, patternsDir + '**/*')
 
@@ -25,17 +32,39 @@ Q.nfcall(fileset, patternsDir + '**/*')
             return;
         if (file.match(/\.md$/g)){
             return transformFile(file);
-        } else {
+        } else if (fs.lstatSync(file).isFile()) {
             return copyFile(file);
         }
     }));
+})
+
+.then(function(err) {
+    Q.nfcall(fileset, patternsDir + '**/*.md')
+    
+    .then(function(files) {
+        var patterns = [];
+        _.each(files, function(file) {
+            var dir = path.relative(patternsDir, file);
+            dir = path.dirname(dir);
+            if (dir == '.')
+                return;
+            var data = fs.readFileSync(file, 'utf8');
+            var obj = parseYamlNoQ(data);
+            obj[0].folder = dir;
+            patterns.push(obj[0]);
+        });
+                
+        return transformFile(patternsDir+'index.md', patterns);
+        
+    });
+    
 })
 
 .fail(function(err) {
     console.log(err);
 }).done();
 
-function transformFile(file) {
+function transformFile(file, patterns) {
     return Q.nfcall(fs.readFile, file, 'utf8').then(function(data) {
         console.log(file);
         return parseYaml(data);
@@ -45,17 +74,24 @@ function transformFile(file) {
                 if (!template)
                     return '';
                 console.log('template:', template);
-                return applyTemplate(template, doc);
+
+                return applyTemplate(template, doc, patterns);
             })
         })).then(function(blocks){
             var html = blocks.join('\n');
-            return applyTemplate('./assets/templates/article.jade', {
-                title : 'Hello',
-                content : html
-            }).then(function(html) {
-                
-                return saveDoc(file, html);
-            })
+            var fileDir = path.dirname(file);
+            var homePath = path.relative(fileDir, patternsDir) || '.';
+            var title = docs[0].title == locals.title ? locals.title : docs[0].title + ' – ' + locals.title;
+            
+             return applyTemplate('./assets/templates/article.jade', {
+             title: title,
+             content : html,
+             home : homePath
+             }).then(function(html) {
+                            
+                 return saveDoc(file, html);
+                            
+             })
         })
     });
 }
@@ -63,13 +99,14 @@ function transformFile(file) {
 var TEMPLATES = {
         'pattern' : './assets/templates/pattern.jade',
         'example' : './assets/templates/example.jade',
+        'index' : './assets/templates/index.jade',
 }
 function getDocumentTemplate(doc) {
     return Q(TEMPLATES[doc.type]);
 }
 
-function applyTemplate(templateFile, doc){
-    var options = _.extend({}, doc, {typogr : typogr, pretty: true});
+function applyTemplate(templateFile, doc, patterns){
+    var options = _.extend({}, locals, doc, {typogr : typogr, pretty: true, Markdown: Marked, patterns: patterns});
     return Q.nfcall(Jade.renderFile, templateFile, options);
 }
 
@@ -105,4 +142,14 @@ function parseYaml(str) {
         docs.push(doc);
     });
     return Q(docs);
+}
+
+function parseYamlNoQ(str) {
+    var docs = [];
+    yaml.safeLoadAll(str, function(doc) {
+        if (!doc)
+            return;
+        docs.push(doc);
+    });
+    return docs;
 }

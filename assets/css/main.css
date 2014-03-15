@@ -1,4 +1,13 @@
 body {
-	padding-left:15px;
-	padding-right:15px;
+	padding-left: 15px;
+	padding-right: 15px;
+}
+
+.thumbnail .caption {
+	text-align: center;
+}
+
+.thumbnail img {
+	width:100%;
+	
 }

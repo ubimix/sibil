@@ -1,11 +1,16 @@
 
-h2= title
+h3= title
 
 each image in gallery
-  img(src=image.src)
-  span=image.label
-  a(href=image.href) 
-    span=image.label
+  div.row
+    div.col-sm-6.col-md-6
+        div.thumbnail
+            a(href=image.href) 
+                img(src=image.src)
+            div.caption
+                a(href=image.href) 
+                    span=image.label ? image.label : title
 
-div(style="background-color:red;")
-    !=content
+div
+   if (content)
+    !=Markdown(content.trim())

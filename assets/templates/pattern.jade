@@ -1,12 +1,15 @@
 include mixins
 
 h1= title
- | Tags:  
+div
+ |Tags:  
  mixin problems(problems)
  mixin tags(tags)
-    
+ 
 block content
   article.article
     section.content(style="margin-top:1em;")
-        div.well
-            !=content
+        if(content)
+            div.well
+                !=Markdown(content.trim())
+        h2 Examples
