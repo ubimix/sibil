@@ -1,4 +1,8 @@
 {
+  
+  "name" : "sibil",
+  "version" : "0.0.1",
+
   "dependencies": {
     "js-yaml":"latest",
     "fileset":"latest",
