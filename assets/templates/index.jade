@@ -10,18 +10,24 @@ block content
     - var counter = 0
     each pattern in patterns
         - if (counter%3==0) {
+            -if (counter > 0) 
+                | </div>
          | <div class="row">
         - }
         div.col-sm-3.col-md-4
               div.thumbnail
-                - if (pattern.preview)
-                  a(href=pattern.folder+'/index.html')
-                    img(src=pattern.folder+'/'+pattern.preview)
-                div.caption        
-                  a(href=pattern.folder+'/index.html')=pattern.title
-    
-        - if (counter%3==2) {
-         | </div>
-        - }
+                div.image
+                   - if (pattern.preview)
+                        a(href=pattern.folder+'/index.html')
+                            img(src=pattern.folder+'/'+pattern.preview)
+                div.caption(style="clear:both;")        
+                    a(href=pattern.folder+'/index.html')=pattern.title
         - counter++
+    if (counter > 0)
+        while (counter%3 != 0)
+            div.col-sm-3.col-md-4
+            - counter++
+        | </div>
+        
 
+    

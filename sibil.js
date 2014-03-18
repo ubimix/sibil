@@ -19,7 +19,7 @@ fs.copySync('./assets/js', 'build/js');
 var locals = {
         'title':'UX Patterns for Maps',
         'url': '../',
-        'description': 'Ramblings of an immor(t)al demigod'
+        'description': ''
       }
 
 Q.nfcall(fileset, patternsDir + '**/*')

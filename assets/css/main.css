@@ -7,13 +7,18 @@ body {
 	text-align: center;
 }
 
-.thumbnail img {
-	width:100%;
-	
-}
-
 blockquote {
 	font-size: 14px;
-    margin: 0 0 0px;	
+	margin: 0 0 0px;
 }
 
+div.image {
+	overflow: hidden;
+	text-align: center;
+}
+
+div.image img {
+	height: 250px;
+	max-width: inherit;
+}
+    
