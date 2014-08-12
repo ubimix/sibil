@@ -27,8 +27,23 @@ html(lang="en")
             span.icon-bar
             span.icon-bar
             span.icon-bar
-            
         div.navbar-collapse.collapse(id="navbar-main")
+            ul.nav.navbar-nav
+                li.dropdown
+                    a.dropdown-toggle(data-toggle="dropdown" href="#" id="problems") Problems
+                    ul.dropdown-menu
+                        each problem in allProblems
+                            li
+                                a(href='../'+problem+'.html')
+                                    =problem
+            
+                li.dropdown
+                    a.dropdown-toggle(data-toggle="dropdown" href="#" id="tags") Tags
+                    ul.dropdown-menu
+                        each tag in allTags
+                            li
+                                a(href='../'+tag+'.html')
+                                    =tag
                     
    div.container
              div

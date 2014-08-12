@@ -1,10 +1,13 @@
 
-block header
-  div.jumbotron
-    h1 UX Patterns for Maps
-    section.about
-        p 
-            !=Markdown(content)
+- if (title && content) {
+    block header
+      div.jumbotron
+        h1
+            = title
+        section.about
+            p 
+                !=Markdown(content)
+- }
 
 block content
     - var counter = 0
@@ -12,7 +15,7 @@ block content
         - if (counter%3==0) {
             -if (counter > 0) 
                 | </div>
-         | <div class="row">
+          | <div class="row">
         - }
         div.col-sm-3.col-md-4
               div.thumbnail

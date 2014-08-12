@@ -22,6 +22,24 @@ var locals = {
         'description': ''
       }
 
+function filterByProperty(patterns, propertyName, propertyValue) {
+    
+    var filtered = [];
+    _.each(patterns, function(pattern) {
+        var values = pattern[propertyName] || [];
+        if (values.indexOf(propertyValue) >= 0) {
+            filtered.push(pattern);
+        }
+    });
+    
+    return filtered;
+}
+
+var patterns = [];
+var tags = [];
+var problems = [];
+var patternFiles = [];
+
 Q.nfcall(fileset, patternsDir + '**/*')
 
 .then(function(files) {
@@ -31,32 +49,70 @@ Q.nfcall(fileset, patternsDir + '**/*')
         if (dir == '.')
             return;
         if (file.match(/\.md$/g)){
-            return transformFile(file);
+            var data = fs.readFileSync(file, 'utf8');
+            var obj = parseYamlNoQ(data);
+            var pattern = obj[0];
+            pattern.folder = dir;
+            patterns.push(pattern);
+
+            _.each(pattern.tags, function(tag) {
+               if (tags.indexOf(tag)<0)
+                   tags.push(tag);
+            });
+            
+            _.each(pattern.problems, function(problem) {
+                if (problems.indexOf(problem)<0)
+                    problems.push(problem);
+             });
+            
+            patternFiles.push(file);
+            return Q();
         } else if (fs.lstatSync(file).isFile()) {
             return copyFile(file);
         }
     }));
 })
 
-.then(function(err) {
-    Q.nfcall(fileset, patternsDir + '**/*.md')
-    
-    .then(function(files) {
-        var patterns = [];
-        _.each(files, function(file) {
-            var dir = path.relative(patternsDir, file);
-            dir = path.dirname(dir);
-            if (dir == '.')
-                return;
-            var data = fs.readFileSync(file, 'utf8');
-            var obj = parseYamlNoQ(data);
-            obj[0].folder = dir;
-            patterns.push(obj[0]);
+.then(function(files) {
+    console.log(patternFiles)
+    tags.sort();
+    problems.sort();
+    var promise = Q();
+    _.each(patternFiles, function(file) { 
+        promise = promise.then(function() {
+            return transformFile(file);
         });
-                
-        return transformFile(patternsDir+'index.md', patterns);
-        
+    })
+    
+    return promise;
+})
+
+.then(function() {
+            
+    return transformFile(patternsDir+'index.md', patterns);
+    
+})
+
+.then(function(err) {
+    
+    var promise = Q();
+    _.each(tags, function(tag) {
+        promise = promise.then(function() {
+            var filtered = filterByProperty(patterns, 'tags', tag);
+            return transformFile(patternsDir+'tag.md', filtered, tag);
+        });
     });
+
+    _.each(problems, function(problem) {
+        promise = promise.then(function() {
+            var filtered = filterByProperty(patterns, 'problems', problem);
+            return transformFile(patternsDir+'tag.md', filtered, problem);
+        });
+    });
+    
+
+    
+    return promise;
     
 })
 
@@ -64,7 +120,7 @@ Q.nfcall(fileset, patternsDir + '**/*')
     console.log(err);
 }).done();
 
-function transformFile(file, patterns) {
+function transformFile(file, patterns, outputFileBaseName) {
     return Q.nfcall(fs.readFile, file, 'utf8').then(function(data) {
         console.log(file);
         return parseYaml(data);
@@ -86,10 +142,12 @@ function transformFile(file, patterns) {
              return applyTemplate('./assets/templates/article.jade', {
              title: title,
              content : html,
-             home : homePath
+             home : homePath,
+             allTags : tags,
+             allProblems : problems
              }).then(function(html) {
                             
-                 return saveDoc(file, html);
+                 return saveDoc(file, html, outputFileBaseName);
                             
              })
         })
@@ -106,12 +164,12 @@ function getDocumentTemplate(doc) {
 }
 
 function applyTemplate(templateFile, doc, patterns){
-    var options = _.extend({}, locals, doc, {typogr : typogr, pretty: true, Markdown: Marked, patterns: patterns});
+    var options = _.extend({}, locals, doc, {typogr : typogr, pretty: true, Markdown: Marked, patterns: patterns, allTags: tags, allProblems: problems});
     return Q.nfcall(Jade.renderFile, templateFile, options);
 }
 
-function saveDoc(file, html){
-    var fileName = path.basename(file, '.md');
+function saveDoc(file, html, outputFileBaseName){
+    var fileName = outputFileBaseName || path.basename(file, '.md');
     var dir = path.relative(patternsDir, file);
     dir = path.dirname(dir);
     var outputDir = './build/' + dir;
